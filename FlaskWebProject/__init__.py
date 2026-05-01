@@ -10,6 +10,7 @@ from flask_session import Session
 
 app = Flask(__name__)
 app.config.from_object(Config)
+app.config['PREFERRED_URL_SCHEME'] = 'https'
 # TODO: Add any logging levels and handlers with app.logger
 Session(app)
 db = SQLAlchemy(app)
