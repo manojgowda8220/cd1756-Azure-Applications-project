@@ -82,7 +82,9 @@ def login():
 @app.route(Config.REDIRECT_PATH)  # Its absolute URL must match your app's redirect_uri set in AAD
 def authorized():
     if request.args.get('state') != session.get("state"):
-        return redirect(url_for("home"))
+        flash("Login unsuccessful - state mismatch", "danger")
+        logging.warning("User login failed - state mismatch")
+        return redirect(url_for("login"))
     if "error" in request.args:
         flash("Login unsuccessful or cancelled", "danger")
         logging.warning("User login failed or cancelled")
