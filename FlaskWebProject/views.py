@@ -13,6 +13,7 @@ from FlaskWebProject.models import User, Post
 from flask import flash, request, redirect, url_for
 import msal
 import uuid
+import logging
 
 imageSourceUrl = 'https://'+ app.config['BLOB_ACCOUNT']  + '.blob.core.windows.net/' + app.config['BLOB_CONTAINER']  + '/'
 
@@ -81,9 +82,12 @@ def login():
 @app.route(Config.REDIRECT_PATH)  # Its absolute URL must match your app's redirect_uri set in AAD
 def authorized():
     if request.args.get('state') != session.get("state"):
-        return redirect(url_for("home"))  # No-OP. Goes back to Index page
+        flash("Login unsuccessful - state mismatch", "danger")
+        logging.warning("User login failed - state mismatch")
+        return redirect(url_for("login"))
     if "error" in request.args:
         flash("Login unsuccessful or cancelled", "danger")
+        logging.warning("User login failed or cancelled")
         return redirect(url_for("login"))
     if request.args.get('code'):
         cache = _load_cache()
@@ -101,6 +105,7 @@ def authorized():
         user = User.query.filter_by(username="admin").first()
         login_user(user)
         flash("Successfully logged in", "success")
+        logging.info("User login successful")
         _save_cache(cache)
     return redirect(url_for('home'))
 
