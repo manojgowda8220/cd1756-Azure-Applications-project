@@ -10,6 +10,7 @@ from FlaskWebProject import app, db
 from FlaskWebProject.forms import LoginForm, PostForm
 from flask_login import current_user, login_user, logout_user, login_required
 from FlaskWebProject.models import User, Post
+from flask import flash, request, redirect, url_for
 import msal
 import uuid
 
@@ -81,8 +82,9 @@ def login():
 def authorized():
     if request.args.get('state') != session.get("state"):
         return redirect(url_for("home"))  # No-OP. Goes back to Index page
-    if "error" in request.args:  # Authentication/Authorization failure
-        return render_template("auth_error.html", result=request.args)
+    if "error" in request.args:
+        flash("Login unsuccessful or cancelled", "danger")
+        return redirect(url_for("login"))
     if request.args.get('code'):
         cache = _load_cache()
         # TODO: Acquire a token from a built msal app, along with the appropriate redirect URI
@@ -98,6 +100,7 @@ def authorized():
         # Here, we'll use the admin username for anyone who is authenticated by MS
         user = User.query.filter_by(username="admin").first()
         login_user(user)
+        flash("Successfully logged in", "success")
         _save_cache(cache)
     return redirect(url_for('home'))
 
